@@ -1,8 +1,17 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id              :bigint           not null, primary key
+#  username        :string           not null
+#  password_digest :string           not null
+#  session_token   :string           not null
+#
 class User < ApplicationRecord
 
     validates :password_digest, :session_token, presence: true
     validates :session_token, :username, uniqueness: true
-    validates :user, presence: true
+    validates :username, presence: true
 
     attr_reader :password
 
@@ -33,6 +42,12 @@ class User < ApplicationRecord
         else
             return nil
         end
+    end
+
+    def reset_session_token!
+        self.session_token = SecureRandom::urlsafe_base64
+        self.save!
+        self.session_token
     end
 
 end
