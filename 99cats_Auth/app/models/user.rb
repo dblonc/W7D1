@@ -9,7 +9,7 @@ class User < ApplicationRecord
     after_initialize :ensure_session_token 
 
     def ensure_session_token
-        self.session_token ||= SecureRandom::urlsafe_base64
+        self.session_token ||= SecureRandom::urlsafe_base64 #makes sure each user gets a session token
     end
 
     def self.reset_session_token
@@ -17,9 +17,22 @@ class User < ApplicationRecord
     end
 
     def password=(password)
-
+        self.password_digest = BCrypt::Password.create(password)
+        @password = password
     end
 
+    def is_password?(password)
+        password_obj = BCrypt::Password.new(self.password_digest) #.new comes form bcrypt Password class. NOT THE SAME AS ACTIVE REC
+        password_obj.is_password?(password)  #read this as comparing password_digest with password
+    end
 
+    def self.find_by_credentials(username, password)  #searching the active rec find by method to search data table
+        user = User.find_by(username: username)
+        if user && user.is_password?(password)
+            return user
+        else
+            return nil
+        end
+    end
 
 end
